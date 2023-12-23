@@ -1,28 +1,32 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { decrypt, encrypt } from '@/utils/crypto2'
-import { ShieldOff } from 'lucide-react'
+import { CaseLower, CaseUpper } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export default function Home() {
 	const [inputText, setInputText] = useState('')
-	const [decryptedText, setDecryptedText] = useState('')
 	const [mounted, setMounted] = useState(false)
 	const [change, setChange] = useState({ number: 0, char: 0 })
 	const [isDecrypted, setIsDecrypted] = useState(false)
+	const [isLowerCase, setIsLowerCase] = useState(true)
 
-	const handleDecrypt = useCallback(() => {
-		const decrypted = decrypt(inputText, change.number, change.char)
-		setDecryptedText(decrypted)
-	}, [change.char, change.number, inputText])
+	const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 	useEffect(() => {
-		if (inputText === '' || inputText.length <= 0) setDecryptedText('')
-	}, [inputText])
+		const sensitive = (ev: KeyboardEvent) => {
+			if (ev.getModifierState('CapsLock')) setIsLowerCase(false)
+			else setIsLowerCase(true)
+		}
+
+		window.addEventListener('keydown', sensitive)
+
+		return () => window.removeEventListener('keydown', sensitive)
+	}, [setIsLowerCase])
 
 	useEffect(() => {
 		setInputText('')
@@ -32,7 +36,14 @@ export default function Home() {
 		setMounted(true)
 	}, [])
 
-	const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+	const copyToClipboard = useCallback(async (text: string) => {
+		try {
+			await navigator.clipboard.writeText(text)
+			toast('Copiado para área de transferência')
+		} catch (error) {
+			console.error(error)
+		}
+	}, [])
 
 	if (!mounted) return null
 
@@ -87,31 +98,44 @@ export default function Home() {
 						placeholder={isDecrypted ? 'Descriptografar' : 'Criptografar'}
 					/>
 
-					{isDecrypted && (
-						<Button onClick={handleDecrypt}>
-							<ShieldOff />
-						</Button>
-					)}
+					<span className="rounded border-2 border-gray-500 p-1">
+						{!isLowerCase && <CaseUpper color="white" />}
+						{isLowerCase && <CaseLower color="white" />}
+					</span>
 				</div>
 
 				<section>
 					{!isDecrypted && inputText.length > 0 && (
-						<div className="rounded-md border-2 border-blue-500 hover:bg-blue-500/40">
+						<button
+							className="w-full rounded-md border-2 border-blue-500 hover:bg-blue-500/40"
+							onClick={() =>
+								copyToClipboard(
+									encrypt(inputText, change.number, change.char),
+								)
+							}
+						>
 							<div className="m-2">
-								<p className="break-words text-center font-bold text-blue-500">
+								<p className="select-none break-words text-center font-bold text-blue-500">
 									{encrypt(inputText, change.number, change.char)}
 								</p>
 							</div>
-						</div>
+						</button>
 					)}
-					{isDecrypted && decryptedText.length > 0 && (
-						<div className="rounded-md border-2 border-emerald-500 hover:bg-emerald-500/40">
+					{isDecrypted && inputText.length > 0 && (
+						<button
+							className="w-full rounded-md border-2 border-emerald-500 hover:bg-emerald-500/40"
+							onClick={() =>
+								copyToClipboard(
+									decrypt(inputText, change.number, change.char),
+								)
+							}
+						>
 							<div className="m-2">
-								<p className="break-words text-center font-bold text-emerald-500">
-									{decryptedText}
+								<p className="select-none break-words text-center font-bold text-emerald-500">
+									{decrypt(inputText, change.number, change.char)}
 								</p>
 							</div>
-						</div>
+						</button>
 					)}
 				</section>
 			</div>

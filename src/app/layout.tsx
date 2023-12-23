@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 
+import { Toaster } from '@/components/ui/sonner'
 import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
 import { ReactNode } from 'react'
@@ -24,6 +25,7 @@ export default function RootLayout({
 				)}
 			>
 				{children}
+				<Toaster />
 			</body>
 		</html>
 	)
