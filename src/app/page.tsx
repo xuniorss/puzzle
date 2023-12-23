@@ -1,12 +1,13 @@
 'use client'
 
+import { ButtonCrypt } from '@/components/ButtonCrypt'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
+import { copyToClipboard } from '@/utils/copyToClipboard'
 import { decrypt, encrypt } from '@/utils/crypto2'
 import { CaseLower, CaseUpper } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
 	const [inputText, setInputText] = useState('')
@@ -34,15 +35,6 @@ export default function Home() {
 
 	useEffect(() => {
 		setMounted(true)
-	}, [])
-
-	const copyToClipboard = useCallback(async (text: string) => {
-		try {
-			await navigator.clipboard.writeText(text)
-			toast('Copiado para área de transferência')
-		} catch (error) {
-			console.error(error)
-		}
 	}, [])
 
 	if (!mounted) return null
@@ -106,8 +98,8 @@ export default function Home() {
 
 				<section>
 					{!isDecrypted && inputText.length > 0 && (
-						<button
-							className="w-full rounded-md border-2 border-blue-500 hover:bg-blue-500/40"
+						<ButtonCrypt
+							color="blue"
 							onClick={() =>
 								copyToClipboard(
 									encrypt(inputText, change.number, change.char),
@@ -119,11 +111,11 @@ export default function Home() {
 									{encrypt(inputText, change.number, change.char)}
 								</p>
 							</div>
-						</button>
+						</ButtonCrypt>
 					)}
 					{isDecrypted && inputText.length > 0 && (
-						<button
-							className="w-full rounded-md border-2 border-emerald-500 hover:bg-emerald-500/40"
+						<ButtonCrypt
+							color="emerald"
 							onClick={() =>
 								copyToClipboard(
 									decrypt(inputText, change.number, change.char),
@@ -135,7 +127,7 @@ export default function Home() {
 									{decrypt(inputText, change.number, change.char)}
 								</p>
 							</div>
-						</button>
+						</ButtonCrypt>
 					)}
 				</section>
 			</div>
