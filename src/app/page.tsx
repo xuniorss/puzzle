@@ -2,8 +2,10 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { decrypt, encrypt } from '@/utils/crypto2'
+import { ShieldOff } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function Home() {
@@ -11,6 +13,7 @@ export default function Home() {
 	const [decryptedText, setDecryptedText] = useState('')
 	const [mounted, setMounted] = useState(false)
 	const [change, setChange] = useState({ number: 0, char: 0 })
+	const [isDecrypted, setIsDecrypted] = useState(false)
 
 	const handleDecrypt = useCallback(() => {
 		const decrypted = decrypt(inputText, change.number, change.char)
@@ -20,6 +23,10 @@ export default function Home() {
 	useEffect(() => {
 		if (inputText === '' || inputText.length <= 0) setDecryptedText('')
 	}, [inputText])
+
+	useEffect(() => {
+		setInputText('')
+	}, [isDecrypted])
 
 	useEffect(() => {
 		setMounted(true)
@@ -68,32 +75,44 @@ export default function Home() {
 						))}
 					</div>
 				</div>
-				<div className="flex gap-x-3">
+				<div className="flex items-center gap-x-3">
+					<Switch
+						checked={isDecrypted}
+						onCheckedChange={() => setIsDecrypted((prev) => !prev)}
+					/>
 					<Input
 						type="text"
 						value={inputText}
 						onChange={(ev) => setInputText(ev.target.value)}
+						placeholder={isDecrypted ? 'Descriptografar' : 'Criptografar'}
 					/>
 
-					<Button onClick={handleDecrypt}>Decrypt</Button>
+					{isDecrypted && (
+						<Button onClick={handleDecrypt}>
+							<ShieldOff />
+						</Button>
+					)}
 				</div>
 
-				<section className="grid grid-cols-2 gap-x-4">
-					<div className="rounded-md border-2 border-blue-500">
-						<div className="m-2">
-							<h2 className="font-bold text-blue-400">Encrypted</h2>
-
-							<p className="break-words text-white">
-								{encrypt(inputText, change.number, change.char)}
-							</p>
+				<section>
+					{!isDecrypted && inputText.length > 0 && (
+						<div className="rounded-md border-2 border-blue-500 hover:bg-blue-500/40">
+							<div className="m-2">
+								<p className="break-words text-center font-bold text-blue-500">
+									{encrypt(inputText, change.number, change.char)}
+								</p>
+							</div>
 						</div>
-					</div>
-					<div className="rounded-md border-2 border-emerald-500">
-						<div className="m-2">
-							<h2 className="font-bold text-emerald-400">Decrypted</h2>
-							<p className="break-words text-white">{decryptedText}</p>
+					)}
+					{isDecrypted && decryptedText.length > 0 && (
+						<div className="rounded-md border-2 border-emerald-500 hover:bg-emerald-500/40">
+							<div className="m-2">
+								<p className="break-words text-center font-bold text-emerald-500">
+									{decryptedText}
+								</p>
+							</div>
 						</div>
-					</div>
+					)}
 				</section>
 			</div>
 		</section>
